@@ -5,6 +5,7 @@ using Gtec.Chain.Common.Templates.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static Gtec.Chain.Common.SignalProcessingPipelines.CVEPPipeline;
@@ -24,7 +25,8 @@ namespace Gtec.UnityInterface
         private TrainingCompletedDialog _trainingCompletedDialog;
         private States _currentState;
         private CVEPPipeline.Mode _currentMode;
-        private GameObject camera;
+        private GameObject Camera;
+        public GameObject player;
         private bool _connectionStateChanged;
         private bool _modeChanged;
         private bool _classifierCalculated;
@@ -35,7 +37,7 @@ namespace Gtec.UnityInterface
         private int _flashingDelayMs = 1000;
         void Awake()
         {
-            camera = GameObject.Find("Main Camera");
+            Camera = GameObject.Find("Main Camera");
         }
 
         void Start()
@@ -209,7 +211,8 @@ namespace Gtec.UnityInterface
         private void OnBtnContinue_Click(object sender, EventArgs e)
         {
             CVEPBCIManager.Instance.Configure(CVEPPipeline.Mode.Application);
-            camera.transform.position = new Vector3(0, 20, -10);
+            Camera.transform.position = new Vector3(0, 20, -10);
+            player.SetActive(true);
             _startFlashing = true;
         }
 
