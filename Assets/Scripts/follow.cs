@@ -13,11 +13,15 @@ public class follow : MonoBehaviour
     }
     void OnCollisionStay2D(Collision2D collision)
     {
-    Debug.Log(up);
-    if(up == 1) transform.position = new Vector3(transform.position.x, transform.position.y + 0.1f,0);
-    else if(up == 2) transform.position = new Vector3(transform.position.x - 0.1f, transform.position.y, 0);
-    else if(up == 3) transform.position = new Vector3(transform.position.x + 0.1f, transform.position.y, 0);
-    else transform.position = new Vector3(transform.position.x, transform.position.y - 0.1f,0);
+   
+        if (collision.gameObject.tag != "Zombie")
+        {
+            Debug.Log(up);
+            if (up == 1) transform.position = new Vector3(transform.position.x, transform.position.y + 0.1f, 0);
+            else if (up == 2) transform.position = new Vector3(transform.position.x - 0.1f, transform.position.y, 0);
+            else if (up == 3) transform.position = new Vector3(transform.position.x + 0.1f, transform.position.y, 0);
+            else transform.position = new Vector3(transform.position.x, transform.position.y - 0.1f, 0);
+        }
     }
     // Start is called before the first frame update
     void Start()

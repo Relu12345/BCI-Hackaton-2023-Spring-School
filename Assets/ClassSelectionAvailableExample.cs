@@ -57,22 +57,6 @@ public class ClassSelectionAvailableExample : MonoBehaviour
             if(_selectedClass > 0)
             {
                 _selectedObjects[(int)_selectedClass].gameObject.SetActive(true);
-                if (_selectedClass == 1)
-                {
-                    msg = "up";
-                }
-                if (_selectedClass == 2)
-                {
-                    msg = "down";
-                }
-                if (_selectedClass == 3)
-                {
-                    msg = "left";
-                }
-                if (_selectedClass == 4)
-                {
-                    msg = "right";
-                }
             }
 
             _update = false;

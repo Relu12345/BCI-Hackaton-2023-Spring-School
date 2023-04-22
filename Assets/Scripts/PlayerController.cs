@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using Gtec.UnityInterface;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -36,8 +38,7 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.gameObject.tag == "Zombie")
         {
-            Destroy(this.gameObject);
-            Camera_main.transform.position = new Vector3(0, 0, -10);
+            SceneManager.LoadScene(0);
         }
     }
 }

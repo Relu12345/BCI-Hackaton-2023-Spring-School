@@ -2,8 +2,10 @@ using Gtec.Chain.Common.Nodes.Utilities.CVEPCCA;
 using Gtec.Chain.Common.Nodes.Utilities.LDA;
 using Gtec.Chain.Common.SignalProcessingPipelines;
 using Gtec.Chain.Common.Templates.Utilities;
+using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -11,12 +13,15 @@ using UnityEngine.SceneManagement;
 using static Gtec.Chain.Common.SignalProcessingPipelines.CVEPPipeline;
 using static Gtec.Chain.Common.Templates.DataAcquisitionUnit.DataAcquisitionUnit;
 using static Gtec.UnityInterface.CVEPBCIManager;
+using Random = UnityEngine.Random;
 
 namespace Gtec.UnityInterface
 {
     public class BCIManager2D : MonoBehaviour
     {
         private CVEPFlashController2D _flashController;
+        private Dictionary<int, SpriteRenderer> _selectedObjects;
+        public Sprite[] sprites;
         private Canvas _cvTraining;
         private Canvas _cvConnectionDialog;
         private Canvas _cvTrainingCompletedDialog;
@@ -26,7 +31,7 @@ namespace Gtec.UnityInterface
         private States _currentState;
         private CVEPPipeline.Mode _currentMode;
         private GameObject Camera;
-        public GameObject player;
+        public GameObject player, Zombie;
         private bool _connectionStateChanged;
         private bool _modeChanged;
         private bool _classifierCalculated;
@@ -212,8 +217,59 @@ namespace Gtec.UnityInterface
         {
             CVEPBCIManager.Instance.Configure(CVEPPipeline.Mode.Application);
             Camera.transform.position = new Vector3(0, 35, -10);
+
+            
+            GameObject clone1 = Instantiate(Zombie, new Vector3(Random.Range(-20.5f, 20.5f), Random.Range(27, 43), 0), Quaternion.identity);
+            GameObject clone2 = Instantiate(Zombie, new Vector3(Random.Range(-20.5f, 20.5f), Random.Range(27, 43), 0), Quaternion.identity);
+            GameObject clone3 = Instantiate(Zombie, new Vector3(Random.Range(-20.5f, 20.5f), Random.Range(27, 43), 0), Quaternion.identity);
+            GameObject clone4 = Instantiate(Zombie, new Vector3(Random.Range(-20.5f, 20.5f), Random.Range(27, 43), 0), Quaternion.identity);
+            CVEPFlashObject2D clone1_smk, clone2_smk, clone3_smk, clone4_smk;
+            clone1_smk.ClassId = 3;
+            clone1_smk.Rotate = true;
+            clone1_smk.GameObject = clone1;
+            clone1_smk.DarkSprite = sprites[0];
+            clone1_smk.FlashSprite = sprites[1];
+            _flashController.ApplicationObjects.Add(clone1_smk);
+            clone2_smk.ClassId = 4;
+            clone2_smk.Rotate = true;
+            clone2_smk.GameObject = clone2;
+            clone2_smk.DarkSprite = sprites[0];
+            clone2_smk.FlashSprite = sprites[1];
+            _flashController.ApplicationObjects.Add(clone2_smk);
+            clone3_smk.ClassId = 5;
+            clone3_smk.Rotate = true;
+            clone3_smk.GameObject = clone3;
+            clone3_smk.DarkSprite = sprites[0];
+            clone3_smk.FlashSprite = sprites[1];
+            _flashController.ApplicationObjects.Add(clone3_smk);
+            clone4_smk.ClassId = 6;
+            clone4_smk.Rotate = true;
+            clone4_smk.GameObject = clone4;
+            clone4_smk.DarkSprite = sprites[0];
+            clone4_smk.FlashSprite = sprites[1];
+            _flashController.ApplicationObjects.Add(clone4_smk);
+            _selectedObjects = new Dictionary<int, SpriteRenderer>();
+            List<CVEPFlashObject2D> applicationObjects = _flashController.ApplicationObjects;
+            foreach (CVEPFlashObject2D applicationObject in applicationObjects)
+            {
+                SpriteRenderer[] spriteRenderers = applicationObject.GameObject.GetComponentsInChildren<SpriteRenderer>();
+                foreach (SpriteRenderer spriteRenderer in spriteRenderers)
+                {
+                    if (spriteRenderer.name.Contains("Selected"))
+                    {
+                        _selectedObjects.Add(applicationObject.ClassId, spriteRenderer);
+                    }
+                }
+            }
             player.SetActive(true);
+            clone1.SetActive(true);
+            clone2.SetActive(true);
+            clone3.SetActive(true);
+            clone4.SetActive(true);
+            Camera.transform.parent = player.transform;
             _startFlashing = true;
+            
+
         }
 
         void Update()
