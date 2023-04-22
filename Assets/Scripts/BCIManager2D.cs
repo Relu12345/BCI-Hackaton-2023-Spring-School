@@ -211,7 +211,7 @@ namespace Gtec.UnityInterface
         private void OnBtnContinue_Click(object sender, EventArgs e)
         {
             CVEPBCIManager.Instance.Configure(CVEPPipeline.Mode.Application);
-            Camera.transform.position = new Vector3(0, 20, -10);
+            Camera.transform.position = new Vector3(0, 35, -10);
             player.SetActive(true);
             _startFlashing = true;
         }
