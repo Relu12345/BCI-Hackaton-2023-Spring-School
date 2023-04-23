@@ -7,9 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using static Gtec.Chain.Common.SignalProcessingPipelines.CVEPPipeline;
 using static Gtec.Chain.Common.Templates.DataAcquisitionUnit.DataAcquisitionUnit;
 using static Gtec.UnityInterface.CVEPBCIManager;
@@ -40,6 +42,9 @@ namespace Gtec.UnityInterface
         private bool _startFlashing;
         private System.Diagnostics.Stopwatch _sw;
         private int _flashingDelayMs = 1000;
+        private bool timp_on = false;
+        private float timp = 120f;
+        public Text text_timp;
         void Awake()
         {
             Camera = GameObject.Find("Main Camera");
@@ -213,42 +218,37 @@ namespace Gtec.UnityInterface
             _trainingDialog.Reset();
         }
 
+        private CVEPFlashObject2D Spawn_Zomb(int id)
+        {
+            GameObject clone = Instantiate(Zombie, new Vector3(Random.Range(61.5f, 207.1f), Random.Range(-26.5f, -89.2f), 0), Quaternion.identity);
+            CVEPFlashObject2D clone_smk;
+            clone_smk.ClassId = id;
+            clone_smk.Rotate = true;
+            clone_smk.GameObject = clone;
+            clone_smk.DarkSprite = sprites[0];
+            clone_smk.FlashSprite = sprites[1];
+            clone.SetActive(true);
+            return clone_smk;
+        }
+
         private void OnBtnContinue_Click(object sender, EventArgs e)
         {
+            timp_on = true;
             CVEPBCIManager.Instance.Configure(CVEPPipeline.Mode.Application);
-            Camera.transform.position = new Vector3(0, 35, -10);
-
-            
-            GameObject clone1 = Instantiate(Zombie, new Vector3(Random.Range(-20.5f, 20.5f), Random.Range(27, 43), 0), Quaternion.identity);
-            GameObject clone2 = Instantiate(Zombie, new Vector3(Random.Range(-20.5f, 20.5f), Random.Range(27, 43), 0), Quaternion.identity);
-            GameObject clone3 = Instantiate(Zombie, new Vector3(Random.Range(-20.5f, 20.5f), Random.Range(27, 43), 0), Quaternion.identity);
-            GameObject clone4 = Instantiate(Zombie, new Vector3(Random.Range(-20.5f, 20.5f), Random.Range(27, 43), 0), Quaternion.identity);
-            CVEPFlashObject2D clone1_smk, clone2_smk, clone3_smk, clone4_smk;
-            clone1_smk.ClassId = 3;
-            clone1_smk.Rotate = true;
-            clone1_smk.GameObject = clone1;
-            clone1_smk.DarkSprite = sprites[0];
-            clone1_smk.FlashSprite = sprites[1];
-            _flashController.ApplicationObjects.Add(clone1_smk);
-            clone2_smk.ClassId = 4;
-            clone2_smk.Rotate = true;
-            clone2_smk.GameObject = clone2;
-            clone2_smk.DarkSprite = sprites[0];
-            clone2_smk.FlashSprite = sprites[1];
-            _flashController.ApplicationObjects.Add(clone2_smk);
-            clone3_smk.ClassId = 5;
-            clone3_smk.Rotate = true;
-            clone3_smk.GameObject = clone3;
-            clone3_smk.DarkSprite = sprites[0];
-            clone3_smk.FlashSprite = sprites[1];
-            _flashController.ApplicationObjects.Add(clone3_smk);
-            clone4_smk.ClassId = 6;
-            clone4_smk.Rotate = true;
-            clone4_smk.GameObject = clone4;
-            clone4_smk.DarkSprite = sprites[0];
-            clone4_smk.FlashSprite = sprites[1];
-            _flashController.ApplicationObjects.Add(clone4_smk);
+            Camera.transform.position = new Vector3(118, -48f, -10);
+            List<CVEPFlashObject2D> list = new List<CVEPFlashObject2D>();
+            CVEPFlashObject2D zomb;
+            int numbers = 2;
+            while(numbers <= 27)
+            {
+                zomb = Spawn_Zomb(++numbers);
+                list.Add(zomb);
+            }
             _selectedObjects = new Dictionary<int, SpriteRenderer>();
+            foreach (CVEPFlashObject2D applicationObject in list)
+            {
+                _flashController.ApplicationObjects.Add(applicationObject);
+            }
             List<CVEPFlashObject2D> applicationObjects = _flashController.ApplicationObjects;
             foreach (CVEPFlashObject2D applicationObject in applicationObjects)
             {
@@ -258,22 +258,38 @@ namespace Gtec.UnityInterface
                     if (spriteRenderer.name.Contains("Selected"))
                     {
                         _selectedObjects.Add(applicationObject.ClassId, spriteRenderer);
+                        applicationObject.GameObject.SetActive(false);
                     }
                 }
             }
+            Debug.Log(_selectedObjects.Keys.Count);
             player.SetActive(true);
-            clone1.SetActive(true);
-            clone2.SetActive(true);
-            clone3.SetActive(true);
-            clone4.SetActive(true);
             Camera.transform.parent = player.transform;
             _startFlashing = true;
             
 
         }
 
+        void updateTimer(float currentTime)
+        {
+            currentTime += 1;
+            float minutes = Mathf.FloorToInt(currentTime / 60);
+            float seconds = Mathf.FloorToInt(currentTime % 60);
+
+            text_timp.text = string.Format("{0:00} : {1:00}", minutes, seconds);
+        }
+
         void Update()
         {
+            if (timp_on)
+            {
+                timp -= Time.deltaTime;
+                updateTimer(timp);
+            }
+            if(timp <= 0)
+            {
+                SceneManager.LoadScene(1);
+            }
             //show/hide connection dialog
             if (_connectionStateChanged || _modeChanged)
             {

@@ -10,6 +10,11 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Vector3 playerDirection;
     private GameObject Camera_main;
+
+    public Animator anim;
+    public int LastAnimState = 0;
+
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -26,6 +31,31 @@ public class PlayerController : MonoBehaviour
         float directionX = Input.GetAxisRaw("Horizontal");
         float directionY = Input.GetAxisRaw("Vertical");
 
+        if (directionX > 0)
+        {
+            anim.Play("Right");
+            LastAnimState = 1;
+        }
+        else if (directionX < 0)
+        {
+            anim.Play("Left");
+            LastAnimState = -1;
+        }
+        else if (directionX == 0 && directionY == 0)
+        {
+            if (LastAnimState == -1)
+                anim.Play("IdleLeft");
+            else anim.Play("IdleRight");
+        }
+        if (directionY != 0)
+        {
+            if (LastAnimState == -1)
+            {
+                anim.Play("Left");
+            }
+            else anim.Play("Right");
+        }
+
         playerDirection = new Vector3(directionX, directionY).normalized;
     }
 
@@ -38,6 +68,7 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.gameObject.tag == "Zombie")
         {
+            anim.Play("Deth");
             SceneManager.LoadScene(0);
         }
     }

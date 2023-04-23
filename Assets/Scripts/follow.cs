@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class follow : MonoBehaviour
@@ -7,6 +8,7 @@ public class follow : MonoBehaviour
     [SerializeField] private GameObject player;
     [SerializeField] private float speed = 1.5f;
     private int up;
+    public Animator anim;
     void OnCollisionEnter2D(Collision2D collision) 
     {
         up = Random.Range(0, 3);
@@ -17,10 +19,10 @@ public class follow : MonoBehaviour
         if (collision.gameObject.tag != "Zombie")
         {
             Debug.Log(up);
-            if (up == 1) transform.position = new Vector3(transform.position.x, transform.position.y + 0.1f, 0);
-            else if (up == 2) transform.position = new Vector3(transform.position.x - 0.1f, transform.position.y, 0);
-            else if (up == 3) transform.position = new Vector3(transform.position.x + 0.1f, transform.position.y, 0);
-            else transform.position = new Vector3(transform.position.x, transform.position.y - 0.1f, 0);
+            if (up == 1) transform.position = new Vector3(transform.position.x, transform.position.y, 0);
+            else if (up == 2) transform.position = new Vector3(transform.position.x, transform.position.y, 0);
+            else if (up == 3) transform.position = new Vector3(transform.position.x, transform.position.y, 0);
+            else transform.position = new Vector3(transform.position.x, transform.position.y, 0);
         }
     }
     // Start is called before the first frame update
@@ -28,11 +30,19 @@ public class follow : MonoBehaviour
     {
         
     }
+    private void OnMouseDown()
+    {
+        GameObject child = gameObject.transform.GetChild(1).gameObject;
+        child.SetActive(true);
+        anim.Play("Deth");
+        gameObject.SetActive(false);
+        
+    }
 
     // Update is called once per frame
     void Update()
     {
-        transform.position = Vector2.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
-        transform.up = player.transform.position - transform.position;
+        transform.position = Vector3.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
+        bool freeze = true;
     }
 }
