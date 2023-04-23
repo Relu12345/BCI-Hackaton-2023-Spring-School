@@ -33,8 +33,8 @@ public class follow : MonoBehaviour
     void Update()
     {
         transform.position = Vector3.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
-        transform.up = player.transform.position - transform.position;
-
+        //transform.up = player.transform.position - transform.position;
+        //freeze = true;
         //transform.Rotate(0, 0, 0);
     }
 }

@@ -43,11 +43,19 @@ public class PlayerController : MonoBehaviour
             anim.Play("Left");
             LastAnimState = -1;
         }
-        else if(directionX == 0)
+        else if(directionX == 0 && directionY == 0)
         {
             if (LastAnimState == -1)
                 anim.Play("IdleLeft");
             else anim.Play("IdleRight");
+        }
+        if (directionY != 0)
+        {
+            if (LastAnimState == -1)
+            {
+                anim.Play("Left");
+            }
+            else anim.Play("Right");
         }
 
         playerDirection = new Vector3(directionX, directionY).normalized;
