@@ -32,7 +32,9 @@ public class follow : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.position = Vector2.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
+        transform.position = Vector3.MoveTowards(transform.position, player.transform.position, speed * Time.deltaTime);
         transform.up = player.transform.position - transform.position;
+
+        //transform.Rotate(0, 0, 0);
     }
 }
