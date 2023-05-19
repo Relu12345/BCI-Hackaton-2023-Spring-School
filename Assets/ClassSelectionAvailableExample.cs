@@ -12,6 +12,9 @@ public class ClassSelectionAvailableExample : MonoBehaviour
     public CVEPFlashController2D _flashController;
     private Dictionary<int, SpriteRenderer> _selectedObjects;
     public static string msg = "";
+
+    Animator anim;
+
     void Start()
     {
         //attach to class selection available event
@@ -52,6 +55,7 @@ public class ClassSelectionAvailableExample : MonoBehaviour
             foreach (KeyValuePair<int, SpriteRenderer> kvp in _selectedObjects)
             {
                 kvp.Value.gameObject.SetActive(false);
+
             }
 
             if(_selectedClass > 0)
