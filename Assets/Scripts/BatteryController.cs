@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using static Gtec.Chain.Common.SignalProcessingPipelines.CVEPPipeline;
+using static Gtec.Chain.Common.SignalProcessingPipelines.ERPPipeline;
 
 namespace Gtec.UnityInterface
 {
@@ -25,7 +25,7 @@ namespace Gtec.UnityInterface
             _spChg.transform.localPosition = new Vector3(_lowBattery.Item1, 0);
             _spChg.transform.localScale = new Vector3(_lowBattery.Item2, _batteryHeight);
             _update = true;
-            CVEPBCIManager.Instance.BatteryLevelAvailable += OnBatteryLevelAvailable;
+            ERPBCIManager.Instance.BatteryLevelAvailable += OnBatteryLevelAvailable;
         }
 
         private void OnBatteryLevelAvailable(object sender, BatteryLevelEventArgs e)
@@ -36,7 +36,7 @@ namespace Gtec.UnityInterface
 
         private void OnApplicationQuit()
         {
-            CVEPBCIManager.Instance.BatteryLevelAvailable -= OnBatteryLevelAvailable;
+            ERPBCIManager.Instance.BatteryLevelAvailable -= OnBatteryLevelAvailable;
         }
 
         void Update()

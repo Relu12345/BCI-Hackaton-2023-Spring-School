@@ -36,7 +36,7 @@ namespace Gtec.UnityInterface
             _ddDevices = gameObject.GetComponentInChildren<Dropdown>();
 
             _ddDevices.options.Clear();
-            List<string> serials = CVEPBCIManager.Instance.GetAvailableDevices();
+            List<string> serials = ERPBCIManager.Instance.GetAvailableDevices();
             foreach (string serial in serials)
                 _ddDevices.options.Add(new Dropdown.OptionData(serial));
             _ddDevices.RefreshShownValue();

@@ -28,7 +28,7 @@ namespace Gtec.UnityInterface
             _channelBad = new bool[_numberOfChannels];
             for (int i = 0; i < _numberOfChannels; i++)
                 _channelBad[i] = true;
-            CVEPBCIManager.Instance.SignalQualityAvailable += OnSignalQualityAvailable;
+            ERPBCIManager.Instance.SignalQualityAvailable += OnSignalQualityAvailable;
             _update = true;
         }
 
@@ -49,7 +49,7 @@ namespace Gtec.UnityInterface
 
         private void OnApplicationQuit()
         {
-            CVEPBCIManager.Instance.SignalQualityAvailable -= OnSignalQualityAvailable;
+            ERPBCIManager.Instance.SignalQualityAvailable -= OnSignalQualityAvailable;
         }
 
         private void OnSignalQualityAvailable(object sender, ChannelStatesUpdateEventArgs e)

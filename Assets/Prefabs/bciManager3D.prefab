@@ -2331,11 +2331,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 8379508971946879991}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -113028743, guid: e52b47963cdb17a4f8c29da4fac9fcdb, type: 3}
+  m_Script: {fileID: 848058823, guid: 13b9f3ea2883c8b4e88452507869b435, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   NumberOfTrainingTrials: 60
+  FlashtimeMs: 100
   NumberOfClasses: 6
+  ScoreAverages: 6
   TrainingObject:
     ClassId: 1
     GameObject: {fileID: 0}

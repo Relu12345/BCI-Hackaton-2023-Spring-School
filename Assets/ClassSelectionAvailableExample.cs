@@ -11,8 +11,14 @@ using static Gtec.UnityInterface.BCIManager;
 public class ClassSelectionAvailableExample : MonoBehaviour
 {
     private uint _selectedClass = 0;
+
+    private readonly int maxSelectionCounter = 3;
+
+    private uint selectionCounter = 0;
+    private uint currentSelection = 0;
+
     private bool _update = false;
-    public CVEPFlashController2D _flashController;
+    public ERPFlashController2D _flashController;
     private Dictionary<int, SpriteRenderer> _selectedObjects;
     
     void Start()
@@ -22,8 +28,8 @@ public class ClassSelectionAvailableExample : MonoBehaviour
 
         
         _selectedObjects = new Dictionary<int, SpriteRenderer>();
-        List<CVEPFlashObject2D> applicationObjects = _flashController.ApplicationObjects;
-        foreach(CVEPFlashObject2D applicationObject in applicationObjects)
+        List<ERPFlashObject2D> applicationObjects = _flashController.ApplicationObjects;
+        foreach(ERPFlashObject2D applicationObject in applicationObjects)
         {
             SpriteRenderer[] spriteRenderers = applicationObject.GameObject.GetComponentsInChildren<SpriteRenderer>();
             foreach(SpriteRenderer spriteRenderer in spriteRenderers)
@@ -59,9 +65,31 @@ public class ClassSelectionAvailableExample : MonoBehaviour
                 kvp.Value.gameObject.SetActive(false);
             }
             Debug.Log(_selectedObjects.Keys.Count);
-            if(_selectedClass > 0)
+
+            if (_selectedClass > 0 && _selectedClass <= 5)
             {
-                _selectedObjects[(int)_selectedClass].gameObject.SetActive(true);
+                if (currentSelection == 0)
+                {
+                    currentSelection = _selectedClass;
+                }
+                else if (currentSelection == _selectedClass)
+                {
+                    if (selectionCounter >= maxSelectionCounter)
+                    {
+                        _selectedObjects[(int)_selectedClass].gameObject.SetActive(true);
+                        currentSelection = 0;
+                        selectionCounter = 0;
+                    }
+                    else
+                    {
+                        selectionCounter++;
+                    }
+                }
+                else
+                {
+                    currentSelection = 0;
+                    selectionCounter = 0;
+                }
             }
 
             _update = false;

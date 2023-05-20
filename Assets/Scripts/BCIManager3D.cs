@@ -1,5 +1,4 @@
-﻿using Gtec.Chain.Common.Nodes.Utilities.CVEPCCA;
-using Gtec.Chain.Common.Nodes.Utilities.LDA;
+﻿using Gtec.Chain.Common.Nodes.Utilities.LDA;
 using Gtec.Chain.Common.SignalProcessingPipelines;
 using Gtec.Chain.Common.Templates.Utilities;
 using System;
@@ -7,13 +6,13 @@ using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using static Gtec.Chain.Common.Templates.DataAcquisitionUnit.DataAcquisitionUnit;
-using static Gtec.UnityInterface.CVEPBCIManager;
+using static Gtec.UnityInterface.ERPBCIManager;
 
 namespace Gtec.UnityInterface
 {
     public class BCIManager3D : MonoBehaviour
     {
-        private CVEPFlashController3D _flashController;
+        private ERPFlashController3D _flashController;
         private Canvas _cvTraining;
         private Canvas _cvConnectionDialog;
         private Canvas _cvTrainingCompletedDialog;
@@ -21,7 +20,7 @@ namespace Gtec.UnityInterface
         private TrainingDialog _trainingDialog;
         private TrainingCompletedDialog _trainingCompletedDialog;
         private States _currentState;
-        private CVEPPipeline.Mode _currentMode;
+        private ERPPipeline.Mode _currentMode;
         private bool _connectionStateChanged;
         private bool _modeChanged;
         private bool _classifierCalculated;
@@ -69,37 +68,64 @@ namespace Gtec.UnityInterface
             _cvTrainingCompletedDialog.gameObject.SetActive(false);
 
             //flash controller
-            _flashController = gameObject.GetComponent<CVEPFlashController3D>();
+            _flashController = gameObject.GetComponent<ERPFlashController3D>();
             _flashController.FlashingStarted += OnFlashingStarted;
             _flashController.FlashingStopped += OnFlashingStopped;
             _flashController.Trigger += OnTrigger;
 
-            BCIManager.Instance.Initialize();
+            BCIManager.Instance.Initialize(_flashController.NumberOfClasses);
 
             //bci manager
-            _currentMode = CVEPPipeline.Mode.Training;
-            CVEPBCIManager.Instance.RuntimeExceptionOccured += OnRuntimeExceptionOccured;
-            CVEPBCIManager.Instance.ModeChanged += OnModeChanged;
-            CVEPBCIManager.Instance.ClassifierCalculated += OnClassifierAvailable;
-            CVEPBCIManager.Instance.ClassifierCalculationFailed += OnClassifierCalculationFailed;
-            CVEPBCIManager.Instance.StateChanged += OnBCIStateChanged;
+            _currentMode = ERPPipeline.Mode.Training;
+            ERPBCIManager.Instance.RuntimeExceptionOccured += OnRuntimeExceptionOccured;
+            ERPBCIManager.Instance.ModeChanged += OnModeChanged;
+            ERPBCIManager.Instance.ClassifierCalculated += OnClassifierAvailable;
+            ERPBCIManager.Instance.ClassifierCalculationFailed += OnClassifierCalculationFailed;
+            ERPBCIManager.Instance.StateChanged += OnBCIStateChanged;
 
             _classifierCalculated = false;
             _calculatingClassifier = false;
         }
 
-        private void OnTrigger(object sender, EventArgs e)
+        private void OnTrigger(object sender, ERPTriggerEventArgs e)
         {
-            if (CVEPBCIManager.Instance.Initialized)
-                CVEPBCIManager.Instance.SetTrigger();
+            if (ERPBCIManager.Instance.Initialized)
+                ERPBCIManager.Instance.SetTrigger(e.IsTarget, e.Id, e.Trial, e.IsLastOfTrial);
         }
 
         private void OnClassifierAvailable(object sender, EventArgs e)
         {
             _calculatingClassifier = false;
             _classifierCalculated = true;
-            CCAAccuracy accuracy = CVEPBCIManager.Instance.Accuracy();
-            UnityEngine.Debug.Log(string.Format("Classifier calculated.\nAccuracy: {0}", accuracy.Result.ToString()));
+            Dictionary<int, Accuracy> accuracy = ERPBCIManager.Instance.Accuracy();
+
+            string classifierAccuracy = string.Empty;
+            foreach (KeyValuePair<int, Accuracy> kvp in accuracy)
+                classifierAccuracy += string.Format("Averages: {0}, Accuracy {1}\n", kvp.Key, kvp.Value.Mean);
+            UnityEngine.Debug.Log(string.Format("Classifier calculated.\n{0}", classifierAccuracy));
+
+            double maxAccuracy = 0;
+            int numberOfAverages = 1;
+            for (int i = 0; i < accuracy.Count; i++)
+            {
+                if (accuracy[i + 1].Mean > maxAccuracy)
+                {
+                    maxAccuracy = accuracy[i + 1].Mean;
+                    numberOfAverages = i + 1;
+
+                    if (maxAccuracy == 100)
+                        break;
+                }
+            }
+
+            //autoselect number of averages
+            if (accuracy.Count <= 4 && maxAccuracy < 100)
+                numberOfAverages = numberOfAverages * 2;
+            else
+                numberOfAverages += 1;
+
+            ERPBCIManager.Instance.NumberOfAverages = numberOfAverages;
+            UnityEngine.Debug.Log(string.Format("{0} averages selected.", numberOfAverages));
         }
 
         private void OnClassifierCalculationFailed(object sender, EventArgs e)
@@ -119,11 +145,11 @@ namespace Gtec.UnityInterface
         private void OnFlashingStopped(object sender, EventArgs e)
         {
             Debug.Log("Flashing stopped");
-            if (_currentMode == CVEPPipeline.Mode.Training)
+            if (_currentMode == ERPPipeline.Mode.Training)
             {
                 _calculatingClassifier = true;
                 _classifierCalculated = false;
-                CVEPBCIManager.Instance.Train();
+                ERPBCIManager.Instance.Train();
             }
         }
 
@@ -154,13 +180,13 @@ namespace Gtec.UnityInterface
                 {
                     _currentState = States.Connecting;
                     _connectionStateChanged = true;
-                    CVEPBCIManager.Instance.Initialize(_connectionDialog.Serial);
+                    ERPBCIManager.Instance.Initialize(_connectionDialog.Serial);
                 }
                 catch (Exception ex)
                 {
                     try
                     {
-                        CVEPBCIManager.Instance.Uninitialize();
+                        ERPBCIManager.Instance.Uninitialize();
                     }
                     catch
                     {
@@ -188,13 +214,13 @@ namespace Gtec.UnityInterface
 
         private void OnBtnRetrain_Click(object sender, EventArgs e)
         {
-            CVEPBCIManager.Instance.Configure(CVEPPipeline.Mode.Training);
+            ERPBCIManager.Instance.Configure(ERPPipeline.Mode.Training);
             _trainingDialog.Reset();
         }
 
         private void OnBtnContinue_Click(object sender, EventArgs e)
         {
-            CVEPBCIManager.Instance.Configure(CVEPPipeline.Mode.Application);
+            ERPBCIManager.Instance.Configure(ERPPipeline.Mode.Application);
             _startFlashing = true;
         }
 
@@ -217,7 +243,7 @@ namespace Gtec.UnityInterface
                 }
                 else
                 {
-                    if (_currentMode == CVEPPipeline.Mode.Training)
+                    if (_currentMode == ERPPipeline.Mode.Training)
                     {
                         _cvConnectionDialog.gameObject.SetActive(false);
                         _cvTraining.gameObject.SetActive(true);
@@ -243,10 +269,10 @@ namespace Gtec.UnityInterface
                 }
                 if (_sw.IsRunning && _sw.ElapsedMilliseconds > _flashingDelayMs)
                 {
-                    if (_currentMode == CVEPPipeline.Mode.Training)
-                        _flashController.StartFlashing(CVEPFlashController3D.Mode.Training);
+                    if (_currentMode == ERPPipeline.Mode.Training)
+                        _flashController.StartFlashing(ERPFlashController3D.Mode.Training);
                     else
-                        _flashController.StartFlashing(CVEPFlashController3D.Mode.Application);
+                        _flashController.StartFlashing(ERPFlashController3D.Mode.Application);
                     _startFlashing = false;
                     _sw.Stop();
                 }
@@ -270,7 +296,7 @@ namespace Gtec.UnityInterface
 
             if (_classifierCalculationFailed)
             {
-                CVEPBCIManager.Instance.Configure(CVEPPipeline.Mode.Training);
+                ERPBCIManager.Instance.Configure(ERPPipeline.Mode.Training);
                 _trainingDialog.Reset();
                 _classifierCalculationFailed = false;
             }
@@ -291,13 +317,13 @@ namespace Gtec.UnityInterface
 
             BCIManager.Instance.Uninitialize();
 
-            CVEPBCIManager.Instance.RuntimeExceptionOccured -= OnRuntimeExceptionOccured;
-            CVEPBCIManager.Instance.ModeChanged -= OnModeChanged;
-            CVEPBCIManager.Instance.ClassifierCalculated -= OnClassifierAvailable;
-            CVEPBCIManager.Instance.ClassifierCalculationFailed -= OnClassifierCalculationFailed;
-            CVEPBCIManager.Instance.StateChanged -= OnBCIStateChanged;
+            ERPBCIManager.Instance.RuntimeExceptionOccured -= OnRuntimeExceptionOccured;
+            ERPBCIManager.Instance.ModeChanged -= OnModeChanged;
+            ERPBCIManager.Instance.ClassifierCalculated -= OnClassifierAvailable;
+            ERPBCIManager.Instance.ClassifierCalculationFailed -= OnClassifierCalculationFailed;
+            ERPBCIManager.Instance.StateChanged -= OnBCIStateChanged;
 
-            CVEPBCIManager.Instance.Uninitialize();
+            ERPBCIManager.Instance.Uninitialize();
         }
     }
 }

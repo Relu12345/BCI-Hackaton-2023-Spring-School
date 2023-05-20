@@ -1,4 +1,3 @@
-using Gtec.Chain.Common.Nodes.Utilities.CVEPCCA;
 using Gtec.Chain.Common.Nodes.Utilities.LDA;
 using System;
 using System.Collections.Generic;
@@ -25,25 +24,29 @@ namespace Gtec.UnityInterface
             _sprite = gameObject.GetComponent<SpriteRenderer>();
             _classifierAccuracy = ClassifierAccuracy.NA;
             _update = true;
-            CVEPBCIManager.Instance.ClassifierCalculated += OnClassifierAvailable;
-            CVEPBCIManager.Instance.ClassifierCalculationFailed += OnClassifierCalculationFailed;
+            ERPBCIManager.Instance.ClassifierCalculated += OnClassifierAvailable;
+            ERPBCIManager.Instance.ClassifierCalculationFailed += OnClassifierCalculationFailed;
         }
 
         private void OnApplicationQuit()
         {
-            CVEPBCIManager.Instance.ClassifierCalculated -= OnClassifierAvailable;
-            CVEPBCIManager.Instance.ClassifierCalculationFailed -= OnClassifierCalculationFailed;
+            ERPBCIManager.Instance.ClassifierCalculated -= OnClassifierAvailable;
+            ERPBCIManager.Instance.ClassifierCalculationFailed -= OnClassifierCalculationFailed;
         }
 
         private void OnClassifierAvailable(object sender, EventArgs e)
         {
-            CCAAccuracy accuracy = CVEPBCIManager.Instance.Accuracy();
-            if (accuracy.Result == CCAAccuracy.TrainingQuality.VeryGood)
+            double meanAccuracy = 0;
+            Dictionary<int, Accuracy> accuracy = ERPBCIManager.Instance.Accuracy();
+            if (accuracy.Count < ERPBCIManager.Instance.NumberOfAverages)
+                meanAccuracy = accuracy[accuracy.Count - 1].Mean;
+            else
+                meanAccuracy = accuracy[ERPBCIManager.Instance.NumberOfAverages].Mean;
+
+            if (meanAccuracy >= 90)
                 _classifierAccuracy = ClassifierAccuracy.VeryGood;
-            else if (accuracy.Result == CCAAccuracy.TrainingQuality.Good)
+            else if (meanAccuracy >= 80 && meanAccuracy < 90)
                 _classifierAccuracy = ClassifierAccuracy.Good;
-            else if(accuracy.Result == CCAAccuracy.TrainingQuality.VeryBad || accuracy.Result == CCAAccuracy.TrainingQuality.Bad)
-                _classifierAccuracy = ClassifierAccuracy.Bad;
             else
                 _classifierAccuracy = ClassifierAccuracy.Bad;
 

@@ -33,12 +33,12 @@ namespace Gtec.UnityInterface
 
             _update = false;
             _updateCnt = 0;
-            CVEPBCIManager.Instance.DataLost += OnDataLost;
+            ERPBCIManager.Instance.DataLost += OnDataLost;
         }
 
         private void OnApplicationQuit()
         {
-            CVEPBCIManager.Instance.DataLost -= OnDataLost;
+            ERPBCIManager.Instance.DataLost -= OnDataLost;
         }
 
         private void OnDataLost(object sender, EventArgs e)
